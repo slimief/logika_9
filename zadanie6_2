@@ -1,0 +1,78 @@
+#define _CRT_SECURE_NO_WARNINGS
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <iostream>
+#include <string.h>
+#include <locale.h>
+#include <vector>
+#include <ctime> // Для использования clock()
+const int G = 1000; // Размер графа
+std::vector<int> adj[G]; // Списки смежности
+int visited[G];   // Массив для отслеживания посещенных вершин
+int distance[G];  // Массив для хранения расстояний
+
+// Функция для выполнения обхода в глубину
+void dfs(int vertex, int dist) {
+    visited[vertex] = 1;               // Отмечаем вершину как посещенную
+    distance[vertex] = dist;           // Устанавливаем расстояние до вершины
+
+    for (int i = 0; i < adj[vertex].size(); i++) {
+        int neighbor = adj[vertex][i]; // Получаем соседа
+        if (!visited[neighbor]) {      // Проверяем посещенность
+            dfs(neighbor, dist + 1);   // Рекурсивно вызываем dfs для соседней вершины
+        }
+    }
+}
+
+int main() {
+    setlocale(LC_ALL, "Russian");
+    srand(static_cast<unsigned int>(time(NULL))); // Инициализация генератора случайных чисел
+
+    clock_t start = clock(); // Начало измерения времени
+
+    // Генерация случайных рёбер для неориентированного графа
+    for (int i = 0; i < G; i++) {
+        for (int j = i + 1; j < G; j++) {
+            if (rand() % 2) { // Случайное ребро между i и j
+                adj[i].push_back(j);
+                adj[j].push_back(i);
+            }
+        }
+    }
+
+    // Вывод списков смежности на экран
+    printf("Списки смежности:\n");
+    for (int i = 0; i < G; i++) {
+        printf("%d: ", i);
+        for (size_t j = 0; j < adj[i].size(); j++) {
+            printf("%d ", adj[i][j]);
+        }
+        printf("\n");
+    }
+
+    // Инициализация массивов
+    memset(visited, 0, sizeof(visited));
+    memset(distance, -1, sizeof(distance)); // Установка -1 для обозначения недоступных вершин
+
+    // Запуск DFS от стартовой вершины (например, 0)
+    dfs(0, 0);
+
+    // Вывод расстояний от стартовой вершины
+    printf("Расстояния от вершины 0:\n");
+    for (int i = 0; i < G; i++) {
+        if (distance[i] != -1) {
+            printf("До вершины %d: %d\n", i, distance[i]);
+        }
+        else {
+            printf("До вершины %d: недоступно\n", i);
+        }
+    }
+
+    clock_t end = clock(); // Конец измерения времени
+    double elapsed_time = double(end - start) / CLOCKS_PER_SEC; // Вычисление прошедшего времени
+
+    printf("Время выполнения программы: %.6f секунд\n", elapsed_time);
+
+    return 0;
+}
