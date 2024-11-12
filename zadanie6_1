@@ -1,0 +1,75 @@
+#define _CRT_SECURE_NO_WARNINGS
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <iostream>
+#include <string.h>
+#include <locale.h>
+#include <vector>
+#include <ctime> // Для использования clock()
+#include <time.h> // Для использования clock()
+
+#define G 1000  // Размер графа 
+int M[G][G];      // Матрица смежности 
+bool visited[G];  // Массив для отслеживания посещенных вершин 
+
+void bfs(int start) {
+    int q[G];
+    int front = 0, rear = 0;
+    visited[start] = true;
+    q[rear++] = start;
+
+    while (front != rear) {
+        int current = q[front++];
+        printf("%d ", current);
+
+        for (int i = 0; i < G; i++) {
+            if (M[current][i] == 1 && !visited[i]) {
+                visited[i] = true;
+                q[rear++] = i;
+            }
+        }
+    }
+}
+
+int main() {
+    setlocale(LC_ALL, "Russian");
+    srand(static_cast<unsigned int>(time(NULL)));
+
+    // Инициализация матрицы смежности 
+    for (int i = 0; i < G; i++) {
+        for (int j = 0; j < G; j++) {
+            M[i][j] = 0;  // Изначально нет рёбер 
+        }
+    }
+
+    // Генерация случайных рёбер для неориентированного графа 
+    for (int i = 0; i < G; i++) {
+        for (int j = i + 1; j < G; j++) {
+            M[i][j] = M[j][i] = rand() % 2;  // Случайное ребро между i и j 
+        }
+    }
+
+    // Вывод матрицы смежности на экран 
+    printf("Матрица смежности:\n");
+    for (int i = 0; i < G; i++) {
+        for (int j = 0; j < G; j++) {
+            printf("%d ", M[i][j]);
+        }
+        printf("\n");
+    }
+
+    // Измерение времени выполнения обхода в ширину 
+    clock_t start_time = clock();  // Запоминаем время начала 
+    // Обход в ширину, начиная с вершины 0 
+    printf("Обход в ширину: ");
+    bfs(0);
+    printf("\n");
+    clock_t end_time = clock();  // Запоминаем время окончания 
+
+    // Вычисляем и выводим время выполнения 
+    double time_taken = ((double)(end_time - start_time)) / CLOCKS_PER_SEC;
+    printf("Время выполнения: %f секунд\n", time_taken);
+
+    return 0;
+}
