@@ -1,0 +1,97 @@
+#define _CRT_SECURE_NO_WARNINGS
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <iostream>
+#include <string.h>
+#include <locale.h>
+#include <queue>
+
+//const int G = 5;  // Размер графа
+//int M[G][G];      // Матрица смежности
+
+void bfs(int startVertex, int G, int** M) {
+    std::queue<int> q;  // Очередь для BFS
+    int* distance = (int*)malloc(G * sizeof(int));
+   
+    for (int i = 0; i < G; ++i) {
+        distance[i] = -1;  // Изначально расстояние до всех вершин неопределено
+    }
+
+    distance[startVertex] = 0;
+    q.push(startVertex);
+
+    while (!q.empty()) {
+        int currentVertex = q.front();
+        q.pop();
+
+        // Смотрим соседей текущей вершины
+        for (int i = 0; i < G; i++) {
+            if (M[currentVertex][i] == 1 && distance[i] == -1) {  // Если есть ребро и не посещена
+                distance[i] = distance[currentVertex] + 1;  // Увеличиваем расстояние
+                q.push(i);  // Добавляем в очередь
+            }
+        }
+    }
+
+    // Вывод расстояний от стартовой вершины
+    printf("Расстояния от вершины %d:\n", startVertex);
+    for (int i = 0; i < G; i++) {
+        if (distance[i] != -1) {
+            printf("До вершины %d: %d\n", i, distance[i]);
+        }
+        else {
+            printf("До вершины %d: недоступно\n", i);
+        }
+    }
+    free(distance);
+}
+
+int main() {
+    setlocale(LC_ALL, "Russian");
+    srand(time(NULL));
+
+    int G;
+    int start;
+    printf("Введите размер: ");
+    scanf("%d", &G);
+    int** M = (int**)malloc(G * sizeof(int*));
+    for (int i = 0; i < G; i++) {
+        M[i] = (int*)malloc(G * sizeof(int));
+    }
+
+    // Инициализация матрицы смежности
+    for (int i = 0; i < G; i++) {
+        for (int j = 0; j < G; j++) {
+            if (i == j) {
+                M[i][j] = 0;  // Нет петли
+            }
+            else {
+                M[i][j] = 0;  // Изначально нет ребер
+            }
+        }
+    }
+    // Генерация случайных рёбер для неориентированного графа
+    for (int i = 0; i < G; i++) {
+        for (int j = i + 1; j < G; j++) {
+            M[i][j] = M[j][i] = rand() % 2;  // Случайное ребро между i и j
+        }
+    }
+
+    // Вывод матрицы смежности на экран
+    printf("Матрица смежности:\n");
+    for (int i = 0; i < G; i++) {
+        for (int j = 0; j < G; j++) {
+            printf("%d ", M[i][j]);
+        }
+        printf("\n");
+    }
+
+    // Запуск BFS от вершины 0 (можно выбрать любую)
+    bfs(0, G, M);
+    for (int i = 0; i < G; i++) {
+        free(M[i]);
+    }
+    free(M);
+    return 0;
+}
