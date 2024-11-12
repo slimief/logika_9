@@ -1,0 +1,138 @@
+#define _CRT_SECURE_NO_WARNINGS
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <iostream>
+#include <string.h>
+#include <locale.h>
+#include <queue>
+
+#define G 5  // Размер графа
+#define MAX_QUEUE_SIZE 100
+
+typedef struct Node {
+    int vertex;
+    struct Node* next;
+} Node;
+
+typedef struct Graph {
+    Node* adjLists[G];
+} Graph;
+
+// Создание графа
+Graph* createGraph() {
+    Graph* graph = (Graph*)malloc(sizeof(Graph));  // Явное приведение типа
+    for (int i = 0; i < G; i++) {
+        graph->adjLists[i] = NULL;
+    }
+    return graph;
+}
+
+// Добавление рёбер в граф
+void addEdge(Graph* graph, int src, int dest) {
+    Node* newNode = (Node*)malloc(sizeof(Node));  // Явное приведение типа
+    newNode->vertex = dest;
+    newNode->next = graph->adjLists[src];
+    graph->adjLists[src] = newNode;
+
+    // Для неориентированного графа добавляем обратное направление
+    newNode = (Node*)malloc(sizeof(Node));  // Явное приведение типа
+    newNode->vertex = src;
+    newNode->next = graph->adjLists[dest];
+    graph->adjLists[dest] = newNode;
+}
+
+// Освобождение памяти
+void freeGraph(Graph* graph) {
+    for (int i = 0; i < G; i++) {
+        Node* temp = graph->adjLists[i];
+        while (temp) {
+            Node* next = temp->next;
+            free(temp);
+            temp = next;
+        }
+    }
+    free(graph);
+}
+
+// Реализация BFS
+void bfs(Graph* graph, int startVertex) {
+    int queue[MAX_QUEUE_SIZE];    // Очередь
+    int front = 0, rear = 0;      // Указатели на начало и конец очереди
+    int visited[G] = { 0 };          // Массив для отслеживания посещенных вершин
+    int distance[G];               // Массив для хранения расстояний
+
+    // Инициализация расстояний
+    for (int i = 0; i < G; ++i) {
+        distance[i] = -1;  // Изначально расстояние до всех вершин неопределено
+    }
+
+    // Начнем с начальной вершины
+    visited[startVertex] = 1;
+    distance[startVertex] = 0;
+    queue[rear++] = startVertex;  // Добавляем начальную вершину в очередь
+
+    while (front < rear) {
+        int currentVertex = queue[front++];  // Получаем текущую вершину из очереди
+
+        // Смотрим соседей текущей вершины
+        Node* temp = graph->adjLists[currentVertex];
+        while (temp) {
+            int adjVertex = temp->vertex;
+            if (!visited[adjVertex]) {  // Если сосед не посещен
+                visited[adjVertex] = 1;
+                distance[adjVertex] = distance[currentVertex] + 1;  // Увеличиваем расстояние
+                queue[rear++] = adjVertex;  // Добавляем в очередь
+            }
+            temp = temp->next;
+        }
+    }
+
+    // Вывод расстояний от стартовой вершины
+    printf("Расстояния от вершины %d:\n", startVertex);
+    for (int i = 0; i < G; i++) {
+        if (distance[i] != -1) {
+            printf("До вершины %d: %d\n", i, distance[i]);
+        }
+        else {
+            printf("До вершины %d: недоступно\n", i);
+        }
+    }
+}
+
+int main() {
+    setlocale(LC_ALL, "Russian");
+    srand(time(NULL));
+
+    // Создание графа
+    Graph* graph = createGraph();
+
+    // Генерация случайных рёбер для неориентированного графа
+    for (int i = 0; i < G; i++) {
+        for (int j = i + 1; j < G; j++) {
+            if (rand() % 2) {  // Случайное ребро между i и j
+                addEdge(graph, i, j);
+            }
+        }
+    }
+
+    // Вывод списков смежности на экран
+    printf("Списки смежности:\n");
+    for (int i = 0; i < G; i++) {
+        printf("%d: ", i);
+        Node* temp = graph->adjLists[i];
+        while (temp) {
+            printf("%d ", temp->vertex);
+            temp = temp->next;
+        }
+        printf("\n");
+    }
+
+    // Запуск BFS от вершины 0 (можно выбрать любую)
+    bfs(graph, 0);
+
+    // Освобождение памяти
+    freeGraph(graph);
+
+    return 0;
+}
